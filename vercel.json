@@ -1,0 +1,41 @@
+{
+  "version": 2,
+  "name": "legallens-ai",
+  "builds": [
+    {
+      "src": "package.json",
+      "use": "@vercel/next"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "/api/$1"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/$1"
+    }
+  ],
+  "functions": {
+    "pages/api/ocr.js": {
+      "maxDuration": 30
+    },
+    "pages/api/summarize.js": {
+      "maxDuration": 30
+    },
+    "pages/api/analyze.js": {
+      "maxDuration": 30
+    },
+    "pages/api/chat.js": {
+      "maxDuration": 30
+    },
+    "pages/api/visualize.js": {
+      "maxDuration": 30
+    }
+  },
+  "env": {
+    "HUGGINGFACE_API_KEY": "@huggingface-api-key",
+    "OCR_SPACE_API_KEY": "@ocr-space-api-key"
+  }
+}
