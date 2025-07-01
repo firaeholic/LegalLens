@@ -239,11 +239,11 @@ export default function DemoPage() {
                     <div className="mt-6 space-y-3">
                       <div className="bg-white rounded-lg p-3 text-left border">
                         <p className="text-sm text-gray-600 mb-1">Sample Question:</p>
-                        <p className="text-sm font-medium">"What are the main risks in this contract?"</p>
+                        <p className="text-sm font-medium">What are the main risks in this contract?</p>
                       </div>
                       <div className="bg-blue-50 rounded-lg p-3 text-left border border-blue-200">
                         <p className="text-sm text-blue-600 mb-1">AI Response:</p>
-                        <p className="text-sm">"The main risks include an overly broad non-compete clause and unclear severance terms..."</p>
+                        <p className="text-sm">The main risks include an overly broad non-compete clause and unclear severance terms...</p>
                       </div>
                     </div>
                   </div>

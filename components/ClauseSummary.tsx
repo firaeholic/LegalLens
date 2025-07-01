@@ -127,7 +127,7 @@ export default function ClauseSummary({ summary, clauses, riskScore }: ClauseSum
                   {getTypeIcon(clause.type)}
                 </div>
                 <blockquote className="text-sm text-gray-800 italic mb-3 pl-4 border-l-2 border-danger-300">
-                  "{clause.text}"
+                  {clause.text}
                 </blockquote>
                 <p className="text-sm text-danger-800">
                   <strong>Risk Analysis:</strong> {clause.explanation}
@@ -155,7 +155,7 @@ export default function ClauseSummary({ summary, clauses, riskScore }: ClauseSum
                   {getTypeIcon(clause.type)}
                 </div>
                 <blockquote className="text-sm text-gray-800 italic mb-3 pl-4 border-l-2 border-gray-300">
-                  "{clause.text}"
+                  {clause.text}
                 </blockquote>
                 <p className="text-sm text-gray-700">
                   <strong>Analysis:</strong> {clause.explanation}
@@ -183,7 +183,7 @@ export default function ClauseSummary({ summary, clauses, riskScore }: ClauseSum
                   {getTypeIcon(clause.type)}
                 </div>
                 <blockquote className="text-sm text-gray-800 italic mb-3 pl-4 border-l-2 border-success-300">
-                  "{clause.text}"
+                  {clause.text}
                 </blockquote>
                 <p className="text-sm text-success-800">
                   <strong>Benefits:</strong> {clause.explanation}
