@@ -305,6 +305,35 @@ export async function retry<T>(
   throw lastError!
 }
 
+// Retry utility with exponential backoff
+export async function retryWithBackoff<T>(
+  fn: () => Promise<T>,
+  maxAttempts: number = 3,
+  initialDelay: number = 1000,
+  backoffMultiplier: number = 2
+): Promise<T> {
+  let lastError: Error
+  let currentDelay = initialDelay
+  
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    try {
+      return await fn()
+    } catch (error) {
+      lastError = error instanceof Error ? error : new Error(String(error))
+      
+      if (attempt === maxAttempts) {
+        throw lastError
+      }
+      
+      logger.warn(`Attempt ${attempt} failed, retrying in ${currentDelay}ms`, lastError, 'retryWithBackoff')
+      await new Promise(resolve => setTimeout(resolve, currentDelay))
+      currentDelay *= backoffMultiplier
+    }
+  }
+  
+  throw lastError!
+}
+
 // Generate unique ID
 export function generateId(): string {
   return Math.random().toString(36).substring(2) + Date.now().toString(36)

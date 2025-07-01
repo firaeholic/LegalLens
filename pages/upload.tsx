@@ -47,13 +47,16 @@ export default function UploadPage() {
     }
 
     try {
+      // Store uploaded file in session storage before analysis
+      sessionStorage.setItem(APP_CONFIG.storageKeys.UPLOADED_FILES, JSON.stringify(uploadedFile))
+      
       await analyzeDocument(uploadedFile.file)
       // Navigate to analysis page after successful analysis
       router.push('/analyze')
     } catch (error) {
       logger.error('Analysis failed', error, 'UploadPage')
     }
-  }, [uploadedFile?.file, analyzeDocument, router])
+  }, [uploadedFile, analyzeDocument, router])
 
   // Handle file removal
   const handleRemoveFile = useCallback(() => {

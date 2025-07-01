@@ -1,6 +1,6 @@
 // API Client for LegalLens AI
 import type { APIResponse, OCRResult, SummaryResult, ChatResponse, FlowVisualizationData } from '../types'
-import { AppError, logger, retry } from './utils'
+import { AppError, logger, retry, retryWithBackoff } from './utils'
 import { API_ENDPOINTS, ERROR_CODES, APP_CONFIG } from '../config/constants'
 
 class APIClient {
@@ -133,17 +133,18 @@ class APIClient {
   }
   
   // Summarization API
+  // Update the summarizeText method
   async summarizeText(text: string): Promise<SummaryResult> {
     logger.info('Starting text summarization', { textLength: text.length }, 'apiClient.summarizeText')
     
     try {
-      const result = await retry(
+      const result = await retryWithBackoff(
         () => this.request<SummaryResult>(API_ENDPOINTS.SUMMARIZE, {
           method: 'POST',
           body: JSON.stringify({ text })
         }, APP_CONFIG.apiTimeouts.SUMMARIZE),
-        2,
-        1500
+        2, // Max 2 retries
+        2000 // Start with 2 second delay
       )
       
       logger.info('Text summarization completed', {

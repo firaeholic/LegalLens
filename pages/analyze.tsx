@@ -27,7 +27,8 @@ export default function AnalyzePage() {
     progress,
     analyzeDocument,
     exportAnalysis,
-    clearAnalysis
+    clearAnalysis,
+    loadStoredAnalysis
   } = useDocumentAnalysis()
   
   const {
@@ -41,17 +42,17 @@ export default function AnalyzePage() {
 
   // Load analysis from session storage or redirect to upload
   useEffect(() => {
-    const storedAnalysis = sessionStorage.getItem(APP_CONFIG.storageKeys.analysis)
-    const storedFile = sessionStorage.getItem(APP_CONFIG.storageKeys.uploadedFile)
+    const storedAnalysis = sessionStorage.getItem(APP_CONFIG.storageKeys.ANALYSIS_RESULTS)
+    const storedFile = sessionStorage.getItem(APP_CONFIG.storageKeys.UPLOADED_FILES)
     
     if (storedAnalysis) {
       try {
-        const parsedAnalysis = JSON.parse(storedAnalysis)
-        // Analysis already exists, use it
+        // Load the stored analysis into state
+        loadStoredAnalysis()
         logger.info('Loaded existing analysis from storage', {}, 'AnalyzePage')
       } catch (error) {
         logger.error('Failed to parse stored analysis', error, 'AnalyzePage')
-        sessionStorage.removeItem(APP_CONFIG.storageKeys.analysis)
+        sessionStorage.removeItem(APP_CONFIG.storageKeys.ANALYSIS_RESULTS)
       }
     }
     
@@ -77,7 +78,7 @@ export default function AnalyzePage() {
       router.push('/upload')
       return
     }
-  }, [router, analysis, analyzeDocument])
+  }, [router, analysis, analyzeDocument, loadStoredAnalysis])
 
   // Handle tab switching
   const handleTabSwitch = (tab: typeof activeTab) => {

@@ -143,6 +143,7 @@ export interface UseDocumentAnalysisReturn {
   analyzeDocument: (file: File) => Promise<void>
   clearAnalysis: () => void
   exportAnalysis: () => void
+  loadStoredAnalysis: () => void
 }
 
 export interface UseFileUploadReturn {

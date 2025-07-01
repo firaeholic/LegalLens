@@ -199,5 +199,5 @@ export function useDocumentAnalysis(): UseDocumentAnalysisReturn {
     clearAnalysis,
     exportAnalysis,
     loadStoredAnalysis
-  } as UseDocumentAnalysisReturn & { loadStoredAnalysis: () => void }
+  }
 }

@@ -5,11 +5,11 @@ export const APP_CONFIG: AppConfig = {
   maxFileSize: 10 * 1024 * 1024, // 10MB
   supportedFormats: ['pdf', 'png', 'jpg', 'jpeg', 'webp'],
   apiTimeouts: {
-    OCR: 30000,
-    SUMMARIZE: 20000,
-    ANALYZE: 25000,
-    CHAT: 15000,
-    VISUALIZE: 20000
+    OCR: 45000,        // Increased from 30000
+    SUMMARIZE: 35000,  // Increased from 20000
+    ANALYZE: 40000,    // Increased from 25000
+    CHAT: 20000,       // Increased from 15000
+    VISUALIZE: 25000   // Increased from 20000
   },
   storageKeys: {
     UPLOADED_FILES: 'legallens_uploaded_files',

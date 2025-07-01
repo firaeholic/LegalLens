@@ -1,7 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
+import type { SummaryResult } from '../../types'
 
-interface SummarizeResponse {
-  summary?: string
+interface SummarizeResponse extends Partial<SummaryResult> {
   error?: string
 }
 
@@ -26,27 +26,46 @@ export default async function handler(
 
     // Try multiple free AI services in order of preference
     let summary = ''
+    let lastError = null
     
     try {
       // First try: Hugging Face Inference API (free tier)
       summary = await summarizeWithHuggingFace(text)
     } catch (error) {
-      console.log('Hugging Face failed, trying fallback:', error)
+      console.log('Hugging Face failed:', error.message)
+      lastError = error
       try {
         // Second try: OpenAI-compatible free services
         summary = await summarizeWithFreeAPI(text)
       } catch (error2) {
-        console.log('Free API failed, using rule-based summarization:', error2)
-        // Fallback: Rule-based summarization
-        summary = await ruleBasedSummarization(text)
+        console.log('Free API failed:', error2.message)
+        lastError = error2
+        try {
+          // Fallback: Rule-based summarization
+          summary = await ruleBasedSummarization(text)
+        } catch (error3) {
+          console.log('Rule-based summarization failed:', error3.message)
+          lastError = error3
+        }
       }
     }
 
     if (!summary.trim()) {
-      return res.status(500).json({ error: 'Failed to generate summary' })
+      return res.status(500).json({ 
+        error: `Failed to generate summary. Last error: ${lastError?.message || 'Unknown error'}` 
+      })
     }
 
-    res.status(200).json({ summary })
+    // Create complete SummaryResult object
+    const result: SummaryResult = {
+      summary: summary.trim(),
+      keyPoints: extractKeyPoints(summary),
+      wordCount: text.split(/\s+/).length,
+      compressionRatio: summary.split(/\s+/).length / text.split(/\s+/).length,
+      method: lastError ? 'extractive' : 'ai'
+    }
+
+    res.status(200).json(result)
   } catch (error) {
     console.error('Summarization error:', error)
     res.status(500).json({ error: 'Failed to process summarization request' })
@@ -55,9 +74,6 @@ export default async function handler(
 
 // Try Hugging Face Inference API (free tier)
 async function summarizeWithHuggingFace(text: string): Promise<string> {
-  // Note: In production, you would use a real Hugging Face API key
-  // For demo purposes, we'll simulate the response
-  
   const API_URL = 'https://api-inference.huggingface.co/models/facebook/bart-large-cnn'
   const HF_API_KEY = process.env.HUGGINGFACE_API_KEY
   
@@ -68,33 +84,48 @@ async function summarizeWithHuggingFace(text: string): Promise<string> {
   // Truncate text if too long (BART has token limits)
   const truncatedText = text.length > 1000 ? text.substring(0, 1000) + '...' : text
   
-  const response = await fetch(API_URL, {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${HF_API_KEY}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      inputs: truncatedText,
-      parameters: {
-        max_length: 150,
-        min_length: 50,
-        do_sample: false
-      }
+  // Create AbortController for timeout
+  const controller = new AbortController()
+  const timeoutId = setTimeout(() => controller.abort(), 25000) // 25 second timeout
+  
+  try {
+    const response = await fetch(API_URL, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${HF_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        inputs: truncatedText,
+        parameters: {
+          max_length: 150,
+          min_length: 50,
+          do_sample: false
+        }
+      }),
+      signal: controller.signal // Add abort signal
     })
-  })
+    
+    clearTimeout(timeoutId)
 
-  if (!response.ok) {
-    throw new Error(`Hugging Face API error: ${response.status}`)
-  }
+    if (!response.ok) {
+      throw new Error(`Hugging Face API error: ${response.status}`)
+    }
 
-  const result = await response.json()
-  
-  if (result.error) {
-    throw new Error(result.error)
+    const result = await response.json()
+    
+    if (result.error) {
+      throw new Error(result.error)
+    }
+    
+    return result[0]?.summary_text || result.summary_text || ''
+  } catch (error) {
+    clearTimeout(timeoutId)
+    if (error.name === 'AbortError') {
+      throw new Error('Hugging Face API request timed out')
+    }
+    throw error
   }
-  
-  return result[0]?.summary_text || result.summary_text || ''
 }
 
 // Try free OpenAI-compatible APIs
@@ -175,6 +206,19 @@ async function ruleBasedSummarization(text: string): Promise<string> {
   }
   
   return summary
+}
+
+// Extract key points from summary
+function extractKeyPoints(summary: string): string[] {
+  const sentences = summary.split(/[.!?]+/).filter(s => s.trim().length > 10)
+  
+  // Take up to 3 most important sentences as key points
+  const keyPoints = sentences
+    .slice(0, 3)
+    .map(sentence => sentence.trim())
+    .filter(sentence => sentence.length > 0)
+  
+  return keyPoints.length > 0 ? keyPoints : ['Summary generated successfully']
 }
 
 // Identify document type based on content
