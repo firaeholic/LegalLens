@@ -36,7 +36,7 @@ export default function AnalyzePage() {
     error: chatError,
     sendMessage,
     clearChat,
-    exportChat
+    suggestedQuestions
   } = useChat()
 
   // Load analysis from session storage or redirect to upload
@@ -133,7 +133,7 @@ export default function AnalyzePage() {
  
    return (
      <Layout
-       title={`Analysis: ${uploadedFile?.name || 'Document'} - LegalLens AI`}
+       title={`Analysis: ${uploadedFile?.preview || 'Document'} - LegalLens AI`}
        description="AI-powered legal document analysis results"
        showHeader={true}
      >
@@ -160,8 +160,7 @@ export default function AnalyzePage() {
                {uploadedFile && (
                  <div className="flex items-center text-sm text-gray-600">
                    <FileText className="w-4 h-4 mr-2" />
-                   <span className="font-medium">{uploadedFile.name}</span>
-                   <span className="ml-2">({formatFileSize(uploadedFile.size)})</span>
+                   <span className="font-medium">{uploadedFile.preview}</span>
                  </div>
                )}
              </div>
@@ -221,7 +220,8 @@ export default function AnalyzePage() {
                      {analysis.riskScore}%
                    </div>
                    <div className={`text-sm font-medium ${getRiskColor(analysis.riskScore)}`}>
-                   {getRiskLevel(analysis.riskScore)}
+                     {getRiskLevel(analysis.riskScore)}
+                   </div>
                  </div>
                </div>
              </div>
@@ -280,7 +280,7 @@ export default function AnalyzePage() {
                {activeTab === 'summary' && (
                  <div className="lg:col-span-3">
                    <ClauseSummary 
-                     summary={analysis.summary?.content || ''}
+                     summary={analysis.summary || ''}
                      clauses={analysis.clauses || []}
                      riskScore={analysis.riskScore}
                    />
@@ -295,7 +295,10 @@ export default function AnalyzePage() {
 
                {activeTab === 'flow' && (
                  <div className="lg:col-span-3">
-                   <FlowVisualizer clauses={analysis.clauses || []} />
+                   <FlowVisualizer clauses={analysis.clauses?.map(clause => ({
+                     ...clause,
+                     type: clause.type === 'general' ? 'neutral' : clause.type
+                   })) || []} />
                  </div>
                )}
              </div>

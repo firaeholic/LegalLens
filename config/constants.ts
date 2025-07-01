@@ -22,15 +22,20 @@ export const APP_CONFIG: AppConfig = {
     medium: 0.4,
     low: 0.2,
     positive: 0
+  },
+  debounceDelays: {
+    SEARCH: 300,
+    INPUT: 150,
+    RESIZE: 100
   }
 } as const
 
 export const API_ENDPOINTS = {
-  OCR: '/api/ocr',
-  SUMMARIZE: '/api/summarize',
-  ANALYZE: '/api/analyze',
-  CHAT: '/api/chat',
-  VISUALIZE: '/api/visualize'
+  OCR: '/ocr',
+  SUMMARIZE: '/summarize',
+  ANALYZE: '/analyze',
+  CHAT: '/chat',
+  VISUALIZE: '/visualize'
 } as const
 
 export const ERROR_CODES = {

@@ -45,9 +45,12 @@ export interface SummaryResult {
 
 export interface ChatMessage {
   id: string
-  type: 'user' | 'assistant'
+  role: 'user' | 'assistant'
   content: string
   timestamp: Date
+  confidence?: number
+  sources?: string[]
+  isError?: boolean
   context?: string
 }
 
@@ -128,6 +131,7 @@ export interface AppConfig {
   apiTimeouts: Record<string, number>
   storageKeys: Record<string, string>
   riskThresholds: Record<RiskLevel, number>
+  debounceDelays: Record<string, number>
 }
 
 // Hook return types

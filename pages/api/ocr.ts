@@ -1,7 +1,10 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 
 interface OCRResponse {
-  extractedText?: string
+  text: string
+  confidence: number
+  processingTime: number
+  method: 'ai' | 'fallback'
   error?: string
 }
 
@@ -13,50 +16,48 @@ export default async function handler(
     return res.status(405).json({ error: 'Method not allowed' })
   }
 
+  const startTime = Date.now()
+
   try {
-    const { file } = req.body
-
-    if (!file || !file.data) {
-      return res.status(400).json({ error: 'No file data provided' })
-    }
-
-    let extractedText = ''
-
-    // For PDF files, try to extract text directly first
-    if (file.type === 'application/pdf') {
-      try {
-        // For demo purposes, we'll simulate OCR extraction
-        // In a real implementation, you would use a free OCR service like:
-        // - OCR.space API (free tier)
-        // - Google Cloud Vision API (free tier)
-        // - Tesseract.js (client-side OCR)
-        
-        extractedText = await simulatePDFTextExtraction(file)
-      } catch (error) {
-        console.error('PDF text extraction failed:', error)
-        extractedText = await simulateOCRExtraction(file)
-      }
-    } else {
-      // For image files, use OCR
-      extractedText = await simulateOCRExtraction(file)
-    }
+    // For demo purposes, simulate OCR processing without actual file parsing
+    // In a real implementation, you would parse the multipart data and process the file
+    
+    // Simulate processing delay
+    await new Promise(resolve => setTimeout(resolve, 1000))
+    
+    // Simulate different document types based on request
+    const extractedText = await simulateDocumentExtraction()
+    const method: 'ai' | 'fallback' = 'ai'
 
     if (!extractedText.trim()) {
       return res.status(400).json({ error: 'No text could be extracted from the document' })
     }
 
-    res.status(200).json({ extractedText })
+    const processingTime = Date.now() - startTime
+    const confidence = Math.random() * 0.3 + 0.7 // Simulate confidence between 0.7-1.0
+
+    res.status(200).json({ 
+      text: extractedText,
+      confidence,
+      processingTime,
+      method
+    })
   } catch (error) {
     console.error('OCR processing error:', error)
-    res.status(500).json({ error: 'Failed to process document' })
+    
+    res.status(500).json({ 
+      error: 'Failed to process document',
+      details: error instanceof Error ? error.message : 'Unknown error'
+    })
   }
 }
 
-// Simulate PDF text extraction (in real app, use pdf-parse or similar)
-async function simulatePDFTextExtraction(file: any): Promise<string> {
+// Simulate document text extraction for demo purposes
+async function simulateDocumentExtraction(): Promise<string> {
   // This is a simulation - in a real app you would:
-  // 1. Use pdf-parse to extract text from PDF
-  // 2. If that fails, convert PDF to images and use OCR
+  // 1. Parse the uploaded file from FormData
+  // 2. Use appropriate libraries (pdf-parse, tesseract.js, etc.)
+  // 3. Extract text based on file type
   
   return `LEGAL SERVICES AGREEMENT
 
@@ -88,59 +89,4 @@ IN WITNESS WHEREOF, the parties have executed this Agreement as of the date firs
 
 [CLIENT SIGNATURE]                    [ATTORNEY SIGNATURE]
 Client                                Attorney`
-}
-
-// Simulate OCR extraction (in real app, use OCR.space, Tesseract.js, or similar)
-async function simulateOCRExtraction(file: any): Promise<string> {
-  // This is a simulation - in a real app you would:
-  // 1. Send the image to a free OCR service like OCR.space
-  // 2. Use Tesseract.js for client-side OCR
-  // 3. Use Google Cloud Vision API free tier
-  
-  // Simulate processing delay
-  await new Promise(resolve => setTimeout(resolve, 1000))
-  
-  return `CONTRACT AGREEMENT
-
-Parties: [PARTY A] and [PARTY B]
-Date: [CONTRACT DATE]
-
-TERMS AND CONDITIONS:
-
-1. Payment Terms
-- Payment due within 30 days of invoice
-- Late fees of 1.5% per month on overdue amounts
-- All payments must be made in US dollars
-
-2. Delivery Terms
-- Goods to be delivered within 14 business days
-- Risk of loss transfers upon delivery
-- Client responsible for inspection upon receipt
-
-3. Warranty
-- 90-day warranty on all products
-- Warranty void if product is modified
-- Replacement parts available for 2 years
-
-4. Limitation of Liability
-- Liability limited to purchase price
-- No consequential damages
-- Indemnification required for third-party claims
-
-5. Termination
-- Either party may terminate with 30 days notice
-- Immediate termination for material breach
-- Surviving obligations include payment and confidentiality
-
-Signatures:
-[SIGNATURE A]     [SIGNATURE B]`
-}
-
-// Configure body parser for larger files
-export const config = {
-  api: {
-    bodyParser: {
-      sizeLimit: '10mb',
-    },
-  },
 }
