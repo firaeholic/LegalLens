@@ -130,7 +130,7 @@ export default function DemoPage() {
                 <div className="mt-2 text-sm text-blue-700">
                   <p>
                     This is a demonstration of LegalLens analysis capabilities using a sample employment contract. 
-                    The analysis shown here represents typical output from our AI-powered legal document review system.
+                    The analysis shown here represents typical output from my AI-powered legal document review system.
                   </p>
                 </div>
               </div>
