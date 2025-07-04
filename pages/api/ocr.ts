@@ -13,7 +13,13 @@ export default async function handler(
   res: NextApiResponse<OCRResponse>
 ) {
   if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' })
+    return res.status(405).json({
+      text: '',
+      confidence: 0,
+      processingTime: 0,
+      method: 'fallback',
+      error: 'Method not allowed'
+    })
   }
 
   const startTime = Date.now()
@@ -30,7 +36,13 @@ export default async function handler(
     const method: 'ai' | 'fallback' = 'ai'
 
     if (!extractedText.trim()) {
-      return res.status(400).json({ error: 'No text could be extracted from the document' })
+      return res.status(400).json({
+        text: '',
+        confidence: 0,
+        processingTime: Date.now() - startTime,
+        method: 'fallback',
+        error: 'No text could be extracted from the document'
+      })
     }
 
     const processingTime = Date.now() - startTime
@@ -47,7 +59,10 @@ export default async function handler(
     
     res.status(500).json({ 
       error: 'Failed to process document',
-      details: error instanceof Error ? error.message : 'Unknown error'
+      text: '',
+      confidence: 0,
+      processingTime: Date.now() - startTime,
+      method: 'fallback',
     })
   }
 }

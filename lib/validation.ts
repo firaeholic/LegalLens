@@ -372,8 +372,8 @@ export function createValidationSchema<T>(validators: {
     const warnings: string[] = []
 
     for (const [key, validator] of Object.entries(validators)) {
-      if (validator && key in data) {
-        const result = validator((data as any)[key])
+      if (validator && typeof data === 'object' && data !== null && key in data) {
+        const result = (validator as (value: any) => ValidationResult)((data as any)[key])
         if (!result.isValid && result.error) {
           errors.push(`${key}: ${result.error}`)
         }

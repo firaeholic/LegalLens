@@ -16,7 +16,7 @@ export default function UploadPage() {
   
   // Custom hooks
   const {
-    uploadedFile,
+    file: uploadedFile,
     isDragActive,
     uploadError,
     isProcessing: isFileProcessing,
@@ -85,6 +85,7 @@ export default function UploadPage() {
     >
       {isProcessing && (
         <LoadingOverlay
+          isVisible={isProcessing}
           message="Processing your document..."
           progress={progress}
           onCancel={() => {
@@ -161,12 +162,12 @@ export default function UploadPage() {
                 <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
                   <div className="flex items-center">
                     <div className="w-10 h-10 mr-3">
-                      {getFileIcon(uploadedFile.file.type)}
+                      {getFileIcon()}
                     </div>
                     <div>
                       <p className="font-medium text-gray-900">{uploadedFile.file.name}</p>
                       <p className="text-sm text-gray-500">
-                        {uploadedFile.formattedSize} • {uploadedFile.file.type}
+                        {uploadedFile.file.size} • {uploadedFile.type}
                       </p>
                     </div>
                   </div>

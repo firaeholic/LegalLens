@@ -140,6 +140,7 @@ export default function AnalyzePage() {
      >
        {isLoading && (
          <LoadingOverlay
+           isVisible={isLoading}
            message={isAnalyzing ? 'Analyzing document...' : 'Processing...'}
            progress={progress}
          />
@@ -265,13 +266,17 @@ export default function AnalyzePage() {
                {activeTab === 'document' && (
                  <>
                    <div className="lg:col-span-2">
-                     <PDFViewer file={uploadedFile} />
+                     <PDFViewer file={uploadedFile ? {
+                       name: uploadedFile.preview || '',
+                       type: uploadedFile.type || '',
+                       data: uploadedFile.base64 || ''
+                     } : null} />
                    </div>
                    <div className="space-y-4">
                      <div className="card">
                        <h3 className="text-lg font-semibold text-gray-900 mb-3">Extracted Text</h3>
                        <div className="max-h-96 overflow-y-auto text-sm text-gray-700 whitespace-pre-wrap">
-                         {analysis.ocrResult?.extractedText || 'No text extracted'}
+                         {analysis.extractedText || 'No text extracted'}
                        </div>
                      </div>
                    </div>
@@ -282,7 +287,13 @@ export default function AnalyzePage() {
                  <div className="lg:col-span-3">
                    <ClauseSummary 
                      summary={analysis.summary || ''}
-                     clauses={analysis.clauses || []}
+                     clauses={analysis.clauses?.map(clause => ({
+                        text: clause.text,
+                        type: clause.riskLevel === 'high' ? 'risk' as const : 
+                              clause.riskLevel === 'low' ? 'positive' as const : 'neutral' as const,
+                        riskLevel: clause.riskLevel === 'positive' ? 'low' : clause.riskLevel as 'high' | 'medium' | 'low',
+                        explanation: clause.explanation
+                      })) || []}
                      riskScore={analysis.riskScore}
                    />
                  </div>
@@ -297,9 +308,12 @@ export default function AnalyzePage() {
                {activeTab === 'flow' && (
                  <div className="lg:col-span-3">
                    <FlowVisualizer clauses={analysis.clauses?.map(clause => ({
-                     ...clause,
-                     type: clause.type === 'general' ? 'neutral' : clause.type
-                   })) || []} />
+                      text: clause.text,
+                      type: clause.riskLevel === 'high' ? 'risk' as const : 
+                            clause.riskLevel === 'low' ? 'positive' as const : 'neutral' as const,
+                      riskLevel: clause.riskLevel === 'positive' ? 'low' : clause.riskLevel as 'high' | 'medium' | 'low',
+                      explanation: clause.explanation
+                    })) || []} />
                  </div>
                )}
              </div>

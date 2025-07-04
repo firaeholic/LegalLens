@@ -10,7 +10,7 @@ interface PDFViewerProps {
     name: string
     type: string
     data: string
-  }
+  } | null
 }
 
 export default function PDFViewer({ file }: PDFViewerProps) {
@@ -21,7 +21,7 @@ export default function PDFViewer({ file }: PDFViewerProps) {
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    if (file.type === 'application/pdf') {
+    if (file && file.type === 'application/pdf') {
       // Convert base64 to data URL for PDF
       setPdfData(`data:application/pdf;base64,${file.data}`)
     } else {
@@ -56,6 +56,18 @@ export default function PDFViewer({ file }: PDFViewerProps) {
 
   const zoomOut = () => {
     setScale(prev => Math.max(prev - 0.2, 0.5))
+  }
+
+  // Handle null file
+  if (!file) {
+    return (
+      <div className="card">
+        <div className="text-center py-8">
+          <FileText className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+          <p className="text-gray-600">No document available for preview</p>
+        </div>
+      </div>
+    )
   }
 
   // Handle non-PDF files (images)

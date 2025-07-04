@@ -220,7 +220,13 @@ export default function DemoPage() {
               <div className="lg:col-span-3">
                 <ClauseSummary 
                   summary={demoAnalysis.summary.content}
-                  clauses={demoAnalysis.clauses}
+                  clauses={demoAnalysis.clauses.map(clause => ({
+                    text: clause.content,
+                    type: clause.riskLevel === 'high' ? 'risk' as const : 
+                          clause.riskLevel === 'low' ? 'positive' as const : 'neutral' as const,
+                    riskLevel: clause.riskLevel,
+                    explanation: clause.explanation
+                  }))}
                   riskScore={demoAnalysis.riskScore}
                 />
               </div>

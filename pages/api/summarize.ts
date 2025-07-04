@@ -31,19 +31,19 @@ export default async function handler(
     try {
       // First try: Hugging Face Inference API (free tier)
       summary = await summarizeWithHuggingFace(text)
-    } catch (error) {
+    } catch (error: any) {
       console.log('Hugging Face failed:', error.message)
       lastError = error
       try {
         // Second try: OpenAI-compatible free services
         summary = await summarizeWithFreeAPI(text)
-      } catch (error2) {
+      } catch (error2: any) {
         console.log('Free API failed:', error2.message)
         lastError = error2
         try {
           // Fallback: Rule-based summarization
           summary = await ruleBasedSummarization(text)
-        } catch (error3) {
+        } catch (error3: any) {
           console.log('Rule-based summarization failed:', error3.message)
           lastError = error3
         }
@@ -119,7 +119,7 @@ async function summarizeWithHuggingFace(text: string): Promise<string> {
     }
     
     return result[0]?.summary_text || result.summary_text || ''
-  } catch (error) {
+  } catch (error: any) {
     clearTimeout(timeoutId)
     if (error.name === 'AbortError') {
       throw new Error('Hugging Face API request timed out')

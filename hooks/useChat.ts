@@ -251,19 +251,10 @@ export function useChat(documentText?: string): UseChatReturn {
 
   return {
     messages,
-    isLoading,
+    loading: isLoading,
     error,
-    isTyping,
-    messagesEndRef,
     sendMessage,
-    debouncedSendMessage,
     clearChat,
-    retryLastMessage,
-    exportChat,
-    getSuggestedQuestions,
-    getMessageStats,
-    findMessageById,
-    deleteMessage,
-    scrollToBottom
+    suggestedQuestions: getSuggestedQuestions(),
   }
 }

@@ -1,7 +1,7 @@
 // Custom hook for file upload functionality
 import { useState, useCallback, useRef } from 'react'
 import type { UploadedFile, UseFileUploadReturn } from '../types'
-import { logger, fileToBase64 } from '../lib/utils'
+import { logger, fileToBase64, formatFileSize } from '../lib/utils'
 import { validateFile } from '../lib/validation'
 import { APP_CONFIG } from '../config/constants'
 
@@ -54,12 +54,13 @@ export function useFileUpload(): UseFileUploadReturn {
       const base64 = await fileToBase64(file)
       
       const uploadedFile: UploadedFile = {
+        id: crypto.randomUUID(),
         file,
-        name: file.name,
-        size: file.size,
+        preview: file.name,
+        status: file.type === 'text/plain' ? 'completed' : 'pending',
+        formattedSize: formatFileSize(file.size),
         type: file.type,
-        base64,
-        uploadedAt: new Date()
+        base64
       }
 
       setUploadedFile(uploadedFile)
@@ -166,16 +167,17 @@ export function useFileUpload(): UseFileUploadReturn {
   }, [uploadedFile?.file])
 
   // Get file icon based on type
-  const getFileIcon = useCallback(() => {
-    if (!uploadedFile?.type) return 'file'
+  const getFileIcon = useCallback((fileType?: string) => {
+    const type = fileType || uploadedFile?.file?.type
+    if (!type) return 'file'
     
-    if (uploadedFile.type === 'application/pdf') return 'file-text'
-    if (uploadedFile.type.startsWith('image/')) return 'image'
-    if (uploadedFile.type.includes('word')) return 'file-text'
-    if (uploadedFile.type.includes('text')) return 'file-text'
+    if (type === 'text/plain') return 'file-text'
+    if (type.startsWith('image/')) return 'image'
+    if (type.includes('word')) return 'file-text'
+    if (type.includes('text')) return 'file-text'
     
     return 'file'
-  }, [uploadedFile?.type])
+  }, [uploadedFile?.file?.type])
 
   // Check if file type is supported
   const isFileTypeSupported = useCallback((file: File) => {
@@ -194,8 +196,10 @@ export function useFileUpload(): UseFileUploadReturn {
     return 0
   }, [isProcessing, uploadedFile])
 
+
   return {
-    uploadedFile,
+    // Legacy interface for backward compatibility
+    file: uploadedFile,
     isDragActive,
     uploadError,
     isProcessing,
@@ -206,10 +210,27 @@ export function useFileUpload(): UseFileUploadReturn {
     handleInputChange,
     openFileDialog,
     clearFile,
+    getFileIcon,
     retryUpload,
     getPreviewUrl,
-    getFileIcon,
     isFileTypeSupported,
-    getUploadProgress
+    getUploadProgress,
+    
+    // New interface properties
+    files: uploadedFile ? [uploadedFile] : [],
+    uploadFile: processFile,
+    removeFile: (id: string) => {
+      if (uploadedFile?.id === id) {
+        clearFile();
+      }
+    },
+    clearFiles: clearFile,
+    validateFile: (file: File) => {
+      const validation = validateFile(file);
+      return {
+        valid: validation.isValid,
+        error: validation.error || undefined
+      };
+    },
   }
 }

@@ -1,4 +1,5 @@
 // Shared TypeScript interfaces and types for LegalLens AI
+import React from 'react'
 
 export type RiskLevel = 'high' | 'medium' | 'low' | 'positive'
 export type ClauseType = 'financial' | 'termination' | 'liability' | 'intellectual_property' | 'confidentiality' | 'obligation' | 'warranty' | 'dispute_resolution' | 'governing_law' | 'benefit' | 'general'
@@ -74,6 +75,9 @@ export interface UploadedFile {
   preview?: string
   status: 'pending' | 'processing' | 'completed' | 'error'
   error?: string
+  type?: string
+  base64?: string
+  formattedSize?: string
 }
 
 export interface AnalysisState {
@@ -147,8 +151,27 @@ export interface UseDocumentAnalysisReturn {
 }
 
 export interface UseFileUploadReturn {
+  // Legacy interface for backward compatibility
+  file: UploadedFile | null
+  isDragActive: boolean
+  uploadError: string | null
+  isProcessing: boolean
+  fileInputRef: React.RefObject<HTMLInputElement>
+  handleDrop: (e: React.DragEvent<HTMLDivElement>) => Promise<void>
+  handleDragOver: (e: React.DragEvent<HTMLDivElement>) => void
+  handleDragLeave: (e: React.DragEvent<HTMLDivElement>) => void
+  handleInputChange: (e: React.ChangeEvent<HTMLInputElement>) => Promise<void>
+  openFileDialog: () => void
+  clearFile: () => void
+  getFileIcon: (fileType?: string) => string
+  retryUpload: () => Promise<void>
+  getPreviewUrl: () => string | null
+  isFileTypeSupported: (file: File) => boolean
+  getUploadProgress: () => number
+  
+  // New interface properties
   files: UploadedFile[]
-  uploadFile: (file: File) => void
+  uploadFile: (file: File) => Promise<UploadedFile>
   removeFile: (id: string) => void
   clearFiles: () => void
   validateFile: (file: File) => { valid: boolean; error?: string }
