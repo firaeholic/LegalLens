@@ -1,6 +1,6 @@
 # LegalLens AI 🔍⚖️
 
-A fully serverless, front-end-driven web application for legal document analysis, built with Next.js and deployable on Vercel with no persistent backend or database.
+A fully serverless, front-end-driven web application for legal document analysis, built with Next.js.
 
 ## 🚀 Features
 
